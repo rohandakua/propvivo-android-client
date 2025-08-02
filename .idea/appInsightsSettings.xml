@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.propvivotaskmanagmentapp.propvivoandroid" />
+                  <option name="mobileSdkAppId" value="1:1052181603061:android:23189b03d88b82c193dbbc" />
+                  <option name="projectId" value="propvivoandroidrohan" />
+                  <option name="projectNumber" value="1052181603061" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
