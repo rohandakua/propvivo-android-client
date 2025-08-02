@@ -17,8 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.authSection.AuthScreen
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,8 +29,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    AuthScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
