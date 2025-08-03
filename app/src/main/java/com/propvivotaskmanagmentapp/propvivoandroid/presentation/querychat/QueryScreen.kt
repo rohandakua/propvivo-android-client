@@ -93,7 +93,7 @@ fun QueryScreenContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 LazyColumn(Modifier.padding(12.dp)) {
-                    item { TaskItem(task = state.task) }
+                    item { TaskItem(task = state.task , showActionButton = false) }
                 }
 
             }
@@ -160,7 +160,7 @@ fun QueryScreenPreview() {
             state = QueryScreenState(
                 talkingTo = "Supervisor",
                 messages = sampleMessages,
-                userIsEmployee = true // or false to preview as supervisor
+                userIsEmployee = false // or false to preview as supervisor
             ),
             onEvent = {}
         )

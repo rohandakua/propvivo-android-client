@@ -43,7 +43,8 @@ fun TaskItem(
     onStartClick: () -> Unit = {},
     onPauseResumeClick: () -> Unit = {},
     isTimerWorking: Boolean = false,
-    messageArrived: Boolean = false
+    messageArrived: Boolean = false,
+    showActionButton:Boolean = true,
 ) {
     val scrollState = rememberScrollState()
     Card(
@@ -72,48 +73,51 @@ fun TaskItem(
             }
             Spacer(modifier = Modifier.size(10.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            if(showActionButton) {
                 Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BadgedBox(modifier = Modifier.clickable { onQueryClick() },
-                        badge = {
-                            if (messageArrived) {
-                                Badge()
-                            }
-                        }) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        BadgedBox(
+                            modifier = Modifier.clickable { onQueryClick() },
+                            badge = {
+                                if (messageArrived) {
+                                    Badge()
+                                }
+                            }) {
+                            Icon(
+                                painter = painterResource(R.drawable.chat),
+                                contentDescription = "chat",
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                         Icon(
-                            painter = painterResource(R.drawable.chat),
-                            contentDescription = "chat",
-                            modifier = Modifier.size(28.dp)
+                            painter = painterResource(if (isTimerWorking) R.drawable.play else R.drawable.pause),
+                            contentDescription = "play/pause",
+                            modifier = Modifier.size(28.dp).clickable { onPauseResumeClick() }
+                        )
+
+                    }
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            formatMillisToHoursAndMinutes(task.timeSpentMs ?: 0L),
+                            Modifier
+                                .border(1.dp, MaterialTheme.colorScheme.outline)
+                                .padding(10.dp)
                         )
                     }
-                    Icon(
-                        painter = painterResource(if (isTimerWorking) R.drawable.play else R.drawable.pause),
-                        contentDescription = "play/pause",
-                        modifier = Modifier.size(28.dp).clickable{onPauseResumeClick()}
-                    )
+                }
 
-                }
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        formatMillisToHoursAndMinutes(task.timeSpentMs ?: 0L),
-                        Modifier
-                            .border(1.dp, MaterialTheme.colorScheme.outline)
-                            .padding(10.dp)
-                    )
-                }
+                Spacer(modifier = Modifier.size(10.dp))
             }
-            Spacer(modifier = Modifier.size(10.dp))
-
             Text(
                 modifier = Modifier.scrollable(scrollState, Orientation.Vertical),
                 text = task.description ?: ""

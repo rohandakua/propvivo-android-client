@@ -6,6 +6,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.Role
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.User
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.AuthRepositoryInterface
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.util.FirebasePathConstants
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
@@ -108,6 +109,19 @@ class FirebaseAuthSource @Inject constructor(
                 // Save user to Firestore with automatic retry and better error handling
                 withTimeout(TIMEOUT_DURATION) {
                     firestore.collection(USERS_COLLECTION)
+                        .document(uid)
+                        .set(user)
+                        .await()
+                }
+                withTimeout(TIMEOUT_DURATION) {
+                    firestore.collection(
+                        when (role) {
+                            Role.Employee.role -> FirebasePathConstants.EMPLOYEES
+                            Role.Admin.role -> FirebasePathConstants.ADMINS
+                            else-> FirebasePathConstants.SUPERVISORS
+                        }
+
+                    )
                         .document(uid)
                         .set(user)
                         .await()

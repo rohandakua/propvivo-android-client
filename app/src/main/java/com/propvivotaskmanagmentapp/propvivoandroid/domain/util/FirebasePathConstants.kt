@@ -1,4 +1,4 @@
-package com.propvivotaskmanagmentapp.propvivoandroid.domain.enum
+package com.propvivotaskmanagmentapp.propvivoandroid.domain.util
 
 object FirebasePathConstants {
     val USERS = "users"
@@ -13,5 +13,7 @@ object FirebasePathConstants {
     val EMPLOYEES = "employees"
     val SUPERVISORS = "supervisors"
     val ADMINS = "admins"
+
+
 
 }
