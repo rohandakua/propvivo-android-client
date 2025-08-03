@@ -8,5 +8,6 @@ data class AuthState(
     val email: String = "",
     val password: String = "",
     val role: Role = Role.Employee, // Used in registration
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val name: String = ""
 )

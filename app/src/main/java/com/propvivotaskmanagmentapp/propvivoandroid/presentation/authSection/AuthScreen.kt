@@ -37,8 +37,10 @@ import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 
 
 @Composable
-fun AuthScreen(viewModel: AuthViewModel = hiltViewModel(),
-               modifier: Modifier = Modifier) {
+fun AuthScreen(
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -96,6 +98,17 @@ fun AuthScreenContent(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
+        if (!state.isSignIn) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = state.name,
+                onValueChange = { onEvent(AuthEvent.NameChanged(it)) },
+                label = { Text("Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 

@@ -7,3 +7,9 @@ plugins {
     id("com.google.devtools.ksp") version "2.2.0-2.0.2" apply false
     id("com.google.dagger.hilt.android") version "2.57" apply false
 }
+buildscript {
+    dependencies {
+        // Make sure you have the latest Firebase BOM version
+        classpath ("com.google.gms:google-services:4.4.0")
+    }
+}

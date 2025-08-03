@@ -6,7 +6,7 @@ import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces
 import kotlinx.coroutines.flow.Flow
 
 class RegisterUseCase(private val repository: AuthRepositoryInterface) {
-    suspend operator fun invoke(email: String, password: String , role: Role): Flow<Result<User>> {
-        return repository.register(email, password, role.role)
+    suspend operator fun invoke(email: String,name :String, password: String , role: Role): Flow<Result<User>> {
+        return repository.register(email,name, password, role.role)
     }
 }

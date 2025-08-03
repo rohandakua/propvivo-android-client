@@ -1,10 +1,14 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.di
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.data.source.FirebaseAuthSource
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.AuthRepositoryInterface
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.PreferenceDataStoreInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.RegisterUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignInUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
@@ -31,6 +35,12 @@ object HiltModule {
 
     @Provides
     @Singleton
+    fun provideFirebaseFirestoreInstance(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
+
+    @Provides
+    @Singleton
     fun provideFirebaseRealtimeDatabaseReference(
         firebaseAuth: FirebaseAuth
     ): DatabaseReference {
@@ -41,10 +51,19 @@ object HiltModule {
     @Singleton
     fun provideFirebaseAuthSource(
         auth: FirebaseAuth,
-        db: DatabaseReference
+        firestore: FirebaseFirestore
     ): AuthRepositoryInterface {
-        return FirebaseAuthSource(auth, db)
+        return FirebaseAuthSource(auth, firestore)
     }
+
+    @Provides
+    @Singleton
+    fun providePreferenceDataStoreHelper(
+        @ApplicationContext context: Context
+    ): PreferenceDataStoreInterface {
+        return PreferenceDataStoreHelper(context)
+    }
+
 
     // UseCases
 

@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 import okio.IOException
 
 private val Context.dataStore by preferencesDataStore(
-    name = "PreferenceDataStore"
+    name = dsConstants.PREFERENCE_DATA_STORE_NAME
 )
 
 class PreferenceDataStoreHelper(context: Context) : PreferenceDataStoreInterface {
