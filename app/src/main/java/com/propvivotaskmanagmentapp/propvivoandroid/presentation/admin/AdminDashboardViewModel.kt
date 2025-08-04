@@ -3,24 +3,46 @@ package com.propvivotaskmanagmentapp.propvivoandroid.presentation.admin
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
+import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.AdminRepositoryInterface
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunction.todayDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.launch
 
 @HiltViewModel
-class AdminDashboardViewModel @Inject constructor() : ViewModel() {
-
+class AdminDashboardViewModel @Inject constructor(
+    private val adminRepository: AdminRepositoryInterface,
+    private val signOutUseCase: SignOutUseCase,
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper
+) : ViewModel() {
     private val _state = mutableStateOf(
-        AdminDashboardState(
-            employees = sampleEmployees
-        )
+        AdminDashboardState(employees = emptyList())
     )
     val state: androidx.compose.runtime.State<AdminDashboardState> = _state
+
+    init {
+        viewModelScope.launch {
+            val employees = adminRepository.getAllEmployeeWithStatus(todayDate)
+            _state.value = _state.value.copy(employees = employees)
+        }
+    }
 
     fun onEvent(event: AdminDashboardEvent) {
         when (event) {
             AdminDashboardEvent.Logout -> {
-                // handle logout
+                viewModelScope.launch {
+                    signOutUseCase.invoke()
+                    preferenceDataStoreHelper.removePreference(dsConstants.USER_ID)
+                    preferenceDataStoreHelper.removePreference(dsConstants.USER_NAME)
+                    preferenceDataStoreHelper.removePreference(dsConstants.USER_EMAIL)
+                    preferenceDataStoreHelper.removePreference(dsConstants.USER_ROLE)
+                }
+                //TODO move to login screen
             }
         }
     }

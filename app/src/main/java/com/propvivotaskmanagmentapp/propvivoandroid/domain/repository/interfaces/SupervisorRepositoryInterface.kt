@@ -12,6 +12,6 @@ interface SupervisorRepositoryInterface {
 
     suspend fun addTask(task: Task)
 
-    suspend fun getTaskQueryList(employeeId: String, taskId: String) : List<TaskQuery>
+    suspend fun getTaskQueryList(taskId: String) : List<TaskQuery>
 
 }

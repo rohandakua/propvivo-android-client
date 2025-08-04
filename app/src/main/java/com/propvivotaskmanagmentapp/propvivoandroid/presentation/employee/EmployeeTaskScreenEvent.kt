@@ -4,7 +4,6 @@ sealed class EmployeeTaskScreenEvent {
     data class SelectTask(val taskId: String) : EmployeeTaskScreenEvent()
     data class StartTask(val taskId: String) : EmployeeTaskScreenEvent()
     data class TogglePauseResume(val taskId: String) : EmployeeTaskScreenEvent()
-    data class ShowTimer(val taskId: String) : EmployeeTaskScreenEvent()
     data class RaiseQuery(val taskId: String) : EmployeeTaskScreenEvent()
     object TakeBreak : EmployeeTaskScreenEvent()
     object AddTaskClicked : EmployeeTaskScreenEvent()

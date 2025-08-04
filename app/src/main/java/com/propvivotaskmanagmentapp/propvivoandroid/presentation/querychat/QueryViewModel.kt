@@ -4,13 +4,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Message
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.TaskQueryInterface
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import java.util.UUID
 
 @HiltViewModel
-class QueryViewModel @Inject constructor() : ViewModel() {
+class QueryViewModel @Inject constructor(
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper,
+    private val queryRepository: TaskQueryInterface
+    ) : ViewModel() {
 
     var state by mutableStateOf(
         QueryScreenState(

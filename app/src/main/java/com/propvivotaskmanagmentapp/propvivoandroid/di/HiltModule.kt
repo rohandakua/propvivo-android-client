@@ -6,9 +6,17 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
+import com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation.AdminRepoImp
+import com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation.EmployeesRepoImp
+import com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation.SupervisorRepoImp
+import com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation.TaskQueryRepoImp
 import com.propvivotaskmanagmentapp.propvivoandroid.data.source.FirebaseAuthSource
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.AdminRepositoryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.AuthRepositoryInterface
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.EmployeesRepositoryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.PreferenceDataStoreInterface
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.SupervisorRepositoryInterface
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.TaskQueryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.RegisterUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignInUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
@@ -63,6 +71,40 @@ object HiltModule {
     ): PreferenceDataStoreInterface {
         return PreferenceDataStoreHelper(context)
     }
+
+    @Provides
+    @Singleton
+    fun provideEmployeesRepo(
+        firestore: FirebaseFirestore
+    ): EmployeesRepositoryInterface {
+        return EmployeesRepoImp(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskQueryRepo(
+        firestore: FirebaseFirestore
+    ): TaskQueryInterface {
+        return TaskQueryRepoImp(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAdminRepo(
+        firestore: FirebaseFirestore
+    ): AdminRepositoryInterface {
+        return AdminRepoImp(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupervisorRepo(
+        firestore: FirebaseFirestore
+    ): SupervisorRepositoryInterface {
+        return SupervisorRepoImp(firestore)
+    }
+
+
 
 
     // UseCases

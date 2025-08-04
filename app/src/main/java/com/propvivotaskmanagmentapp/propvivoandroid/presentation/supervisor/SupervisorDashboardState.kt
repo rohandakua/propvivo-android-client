@@ -4,7 +4,8 @@ import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 
 data class SupervisorDashboardState(
     val employees: List<EmployeeWithTasks> = emptyList(),
-    val selectedEmployeeId: String? = null
+    val selectedEmployeeId: String? = null,
+    val showAddTaskDialog : Boolean = false,
 )
 
 data class EmployeeWithTasks(

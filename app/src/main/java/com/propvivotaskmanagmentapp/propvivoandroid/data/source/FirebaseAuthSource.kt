@@ -176,6 +176,7 @@ class FirebaseAuthSource @Inject constructor(
     override fun signOut() {
         try {
             auth.signOut()
+
             Log.d(TAG, "Sign out successful")
         } catch (e: Exception) {
             Log.e(TAG, "Sign out failed", e)

@@ -34,10 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.TaskItem
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -168,7 +166,7 @@ fun EmployeeTaskScreenPreview() {
             state = EmployeeTaskScreenState(
                 tasks = EmployeeTaskViewModel.sampleTasks,
                 selectedTask = EmployeeTaskViewModel.sampleTasks[0],
-                timerText = "01:23:45"
+                timerText = "01:23:45",
             ),
             onEvent = {}
         )
