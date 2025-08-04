@@ -36,13 +36,25 @@ import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 
 
 @Composable
 fun EmployeeTaskScreen(
-    viewModel: EmployeeTaskViewModel = hiltViewModel()
+    viewModel: EmployeeTaskViewModel = hiltViewModel(),
+    navController : NavHostController
 ) {
     val state = viewModel.state
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent
+            .collect { event ->
+                when (event) {
+                    is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+                    is NavigationEvent.NavigateBack -> navController.popBackStack()
+                }
+            }
+    }
     EmployeeTaskScreenContent(
         state = state,
         onEvent = viewModel::onEvent
@@ -126,7 +138,7 @@ fun EmployeeTaskScreenContent(
 
             Spacer(Modifier.size(16.dp))
             Card(
-                modifier = Modifier.fillMaxHeight(0.8f),
+                modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {

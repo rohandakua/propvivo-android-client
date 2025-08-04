@@ -31,4 +31,12 @@ object HelperFunction {
     val todayDate: Date = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
 
 
+    fun Date.toLocalDate(): LocalDate {
+        return this.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+    }
+
+
+
 }

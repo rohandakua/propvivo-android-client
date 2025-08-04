@@ -6,12 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.AdminRepositoryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunction.todayDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -24,6 +28,10 @@ class AdminDashboardViewModel @Inject constructor(
         AdminDashboardState(employees = emptyList())
     )
     val state: androidx.compose.runtime.State<AdminDashboardState> = _state
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
+
 
     init {
         viewModelScope.launch {
@@ -41,8 +49,9 @@ class AdminDashboardViewModel @Inject constructor(
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_NAME)
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_EMAIL)
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_ROLE)
+
+                    _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.Login.route))
                 }
-                //TODO move to login screen
             }
         }
     }

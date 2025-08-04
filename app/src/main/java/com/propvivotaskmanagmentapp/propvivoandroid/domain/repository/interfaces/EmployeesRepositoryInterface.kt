@@ -3,6 +3,7 @@ package com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.TaskQuery
 import java.time.LocalDate
+import java.util.Date
 
 interface EmployeesRepositoryInterface {
     suspend fun getAllTask(employeeId:String, date: LocalDate) : List<Task>
@@ -14,4 +15,7 @@ interface EmployeesRepositoryInterface {
     suspend fun updateTaskTimeSpent(updatedTime : Long , taskId: String)
 
     suspend fun updateTotalTime(userId: String,updatedTime : Long , date: LocalDate)
+
+    suspend fun getTotalTime(userId: String, date: LocalDate): Long
+
 }

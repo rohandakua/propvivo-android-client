@@ -68,7 +68,7 @@ object HiltModule {
     @Singleton
     fun providePreferenceDataStoreHelper(
         @ApplicationContext context: Context
-    ): PreferenceDataStoreInterface {
+    ): PreferenceDataStoreHelper {
         return PreferenceDataStoreHelper(context)
     }
 
@@ -103,6 +103,7 @@ object HiltModule {
     ): SupervisorRepositoryInterface {
         return SupervisorRepoImp(firestore)
     }
+
 
 
 

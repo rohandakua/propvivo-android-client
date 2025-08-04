@@ -14,12 +14,14 @@ import java.util.UUID
 @HiltViewModel
 class QueryViewModel @Inject constructor(
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper,
-    private val queryRepository: TaskQueryInterface
+    private val queryRepository: TaskQueryInterface,
+    savedStateHandle: androidx.lifecycle.SavedStateHandle
     ) : ViewModel() {
 
+    val isUserEmployee = savedStateHandle.get<Boolean>("UserIsEmployee")
     var state by mutableStateOf(
         QueryScreenState(
-            userIsEmployee = true, // or false based on user role
+            userIsEmployee = isUserEmployee?: true, // or false based on user role
             talkingTo = "Supervisor",
             messages = sampleMessages
         )

@@ -4,13 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.SupervisorRepositoryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 @HiltViewModel
 class SupervisorDashboardViewModel @Inject constructor(
@@ -25,6 +29,14 @@ class SupervisorDashboardViewModel @Inject constructor(
         )
     )
     val state: StateFlow<SupervisorDashboardState> = _state
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
+    fun onQueryClicked() {
+        viewModelScope.launch {
+            _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(false).destination))
+        }
+    }
 
     fun onEvent(event: SupervisorDashboardEvent) {
         when (event) {
@@ -33,7 +45,7 @@ class SupervisorDashboardViewModel @Inject constructor(
             }
 
             is SupervisorDashboardEvent.SelectTask -> {
-                // Future: navigate to task detail or open dialog
+                onQueryClicked()
             }
 
             is SupervisorDashboardEvent.AddTaskClicked -> {
@@ -49,8 +61,10 @@ class SupervisorDashboardViewModel @Inject constructor(
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_NAME)
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_EMAIL)
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_ROLE)
+
+                    _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.Login.route))
                 }
-                //TODO move to login screen
+
             }
 
             SupervisorDashboardEvent.FilterClicked -> {

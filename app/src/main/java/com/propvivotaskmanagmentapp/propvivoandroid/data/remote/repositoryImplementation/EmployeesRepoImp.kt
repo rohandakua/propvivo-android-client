@@ -10,6 +10,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 class EmployeesRepoImp @Inject constructor(
     private val firestore: FirebaseFirestore
@@ -77,5 +78,23 @@ class EmployeesRepoImp @Inject constructor(
                 )
             }.await()
     }
+
+    override suspend fun getTotalTime(userId: String, date: LocalDate): Long {
+        val formattedDate = date.format(dateFormatter)
+
+        return try {
+            val docSnapshot = recordCollection
+                .document(userId)
+                .collection("dates")
+                .document(formattedDate)
+                .get()
+                .await()
+
+            docSnapshot.getLong("totalTime") ?: 0L
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
 
 }

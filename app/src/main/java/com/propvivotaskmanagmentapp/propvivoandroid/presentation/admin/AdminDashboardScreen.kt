@@ -18,19 +18,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 
 @Composable
 fun AdminDashboardScreen(
-    viewModel: AdminDashboardViewModel = hiltViewModel()
+    viewModel: AdminDashboardViewModel = hiltViewModel(),
+    navController : NavHostController
 ) {
     val state by viewModel.state
-
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent
+            .collect { event ->
+                when (event) {
+                    is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+                    is NavigationEvent.NavigateBack -> navController.popBackStack()
+                }
+            }
+    }
     AdminDashboardScreenContent(
         state = state,
         onEvent = viewModel::onEvent

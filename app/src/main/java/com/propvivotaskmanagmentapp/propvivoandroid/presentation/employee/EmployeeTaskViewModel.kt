@@ -1,5 +1,7 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee
 
+import android.util.Log
+import androidx.compose.material3.NavigationRail
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,16 +9,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.EmployeesRepositoryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import java.time.LocalDate
 
 @HiltViewModel
@@ -32,6 +39,15 @@ class EmployeeTaskViewModel @Inject constructor(
         )
     )
         private set
+
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
+    fun onQueryClicked() {
+        viewModelScope.launch {
+            _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(true).destination))
+        }
+    }
 
     private var timerJob: Job? = null
     private var timeElapsed: Long = 0L
@@ -130,7 +146,7 @@ class EmployeeTaskViewModel @Inject constructor(
             }
 
             is EmployeeTaskScreenEvent.RaiseQuery -> {
-                // todo move to query screen
+                onQueryClicked()
             }
 
             EmployeeTaskScreenEvent.TakeBreak -> {
@@ -149,14 +165,33 @@ class EmployeeTaskViewModel @Inject constructor(
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_EMAIL)
                     preferenceDataStoreHelper.removePreference(dsConstants.USER_ROLE)
                 }
-                //TODO move to login screen
+                viewModelScope.launch {
+                    _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.Login.route))
+                }
             }
 
             EmployeeTaskScreenEvent.FinishWork -> {
                 viewModelScope.launch {
-                    state.selectedTask?.let { employeeRepository.updateTaskTimeSpent(timePerTask, it.id) }
-                    employeeRepository.updateTotalTime(userId, timeElapsed, LocalDate.now())
+                    try {
+                        state.selectedTask?.let {
+                            employeeRepository.updateTaskTimeSpent(
+                                timePerTask,
+                                it.id
+                            )
+                        }
+                        Log.e(
+                            "EmployeeTaskViewModel",
+                            "going to update the total time"
+                        )
+                        employeeRepository.updateTotalTime(userId, timeElapsed, LocalDate.now())
+                    }catch (e: Exception){
+                        Log.e(
+                            "EmployeeTaskViewModel",
+                            "Error updating task time spent or total time: ${e.message}"
+                        )
+                    }
                     stopTimer()
+                    _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.EmployeeFirstScreen.route))
                 }
 
             }

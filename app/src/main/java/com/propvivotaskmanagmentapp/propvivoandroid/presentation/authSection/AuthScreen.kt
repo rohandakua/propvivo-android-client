@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.Role
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 
@@ -39,8 +42,18 @@ import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 @Composable
 fun AuthScreen(
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel(),
+    navController: NavHostController
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent
+            .collect { event ->
+                when (event) {
+                    is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+                    is NavigationEvent.NavigateBack -> navController.popBackStack()
+                }
+            }
+    }
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

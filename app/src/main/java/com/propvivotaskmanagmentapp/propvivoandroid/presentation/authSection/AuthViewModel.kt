@@ -8,11 +8,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.Role
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.PreferenceDataStoreInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.RegisterUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignInUseCase
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -20,11 +25,28 @@ import kotlinx.coroutines.launch
 class AuthViewModel @Inject constructor(
     private val signInUseCase: SignInUseCase,
     private val registerUseCase: RegisterUseCase,
-    private val dataStoreHelper: PreferenceDataStoreInterface
+    private val dataStoreHelper: PreferenceDataStoreHelper
 ) : ViewModel() {
+
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
+
 
     var state by mutableStateOf(AuthState())
         private set
+
+    fun onLoginSuccess() {
+        viewModelScope.launch {
+            _navigationEvent.emit(NavigationEvent.NavigateTo(
+                route = when(state.role){
+                    Role.Employee -> AppDestination.EmployeeFirstScreen.route
+                    Role.Supervisor -> AppDestination.SupervisorDashboard.route
+                    Role.Admin -> AppDestination.AdminDashboard.route
+                }
+            ))
+        }
+    }
 
     fun onEvent(event: AuthEvent) {
         when (event) {
@@ -54,8 +76,8 @@ class AuthViewModel @Inject constructor(
                         dataStoreHelper.putPreference(dsConstants.USER_ROLE, it.role)
                         dataStoreHelper.putPreference(dsConstants.USER_NAME, it.name)
                         dataStoreHelper.putPreference(dsConstants.USER_EMAIL, it.email)
-                        // TODO: Navigate to Home screen
                         Log.e("AuthViewModel", "User logged in successfully")
+                        onLoginSuccess()
                     }
                     .onFailure {
                         state = state.copy(errorMessage = it.message)

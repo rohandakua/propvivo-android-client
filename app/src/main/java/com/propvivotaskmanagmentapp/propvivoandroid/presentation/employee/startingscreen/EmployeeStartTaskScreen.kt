@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.Summary
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.SummaryLabel
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
@@ -32,9 +34,19 @@ import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 
 @Composable
 fun EmployeeStartTaskScreen(
-    viewModel: EmployeeStartTaskViewModel = hiltViewModel()
+    viewModel: EmployeeStartTaskViewModel = hiltViewModel(),
+    navController: NavHostController
 ) {
     val state = viewModel.state
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent
+            .collect { event ->
+                when (event) {
+                    is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+                    is NavigationEvent.NavigateBack -> navController.popBackStack()
+                }
+            }
+    }
     EmployeeStartTaskScreenContent(
         state = state,
         onEvent = viewModel::onEvent
@@ -47,8 +59,6 @@ fun EmployeeStartTaskScreenContent(
     state: EmployeeStartTaskScreenState,
     onEvent: (EmployeeStartTaskScreenEvent) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val listState = rememberLazyListState()
 
     Scaffold(
         topBar = {
