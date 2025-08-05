@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +43,8 @@ fun TaskItem(
     onPauseResumeClick: () -> Unit = {},
     isTimerWorking: Boolean = false,
     messageArrived: Boolean = false,
-    showActionButton:Boolean = true,
+    showActionButton: Boolean = true,
+    isSupervisor: Boolean = false
 ) {
     val scrollState = rememberScrollState()
     Card(
@@ -73,7 +73,7 @@ fun TaskItem(
             }
             Spacer(modifier = Modifier.size(10.dp))
 
-            if(showActionButton) {
+            if (showActionButton && !isSupervisor) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -99,8 +99,11 @@ fun TaskItem(
                         Icon(
                             painter = painterResource(if (!isTimerWorking) R.drawable.play else R.drawable.pause),
                             contentDescription = "play/pause",
-                            modifier = Modifier.size(28.dp).clickable { onPauseResumeClick() }
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clickable { onPauseResumeClick() }
                         )
+
 
                     }
                     Row(
@@ -113,9 +116,32 @@ fun TaskItem(
                                 .border(1.dp, MaterialTheme.colorScheme.outline)
                                 .padding(10.dp)
                         )
+
                     }
                 }
 
+                Spacer(modifier = Modifier.size(10.dp))
+            }
+            if (isSupervisor) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(end = 20.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BadgedBox(
+                        modifier = Modifier.clickable { onQueryClick() },
+                        badge = {
+                            if (messageArrived) {
+                                Badge()
+                            }
+                        }) {
+                        Icon(
+                            painter = painterResource(R.drawable.chat),
+                            contentDescription = "chat",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.size(10.dp))
             }
             Text(
@@ -124,7 +150,10 @@ fun TaskItem(
             )
         }
 
+
     }
+
+
 }
 
 @Preview
@@ -143,5 +172,23 @@ fun TaskItemPreview() {
     )
     AppTheme {
         TaskItem(task = task, modifier = Modifier.size(height = 200.dp, width = 500.dp))
+    }
+}
+@Preview
+@Composable
+fun TaskItemPreview1() {
+    val task = Task(
+        "1",
+        "fix the issue",
+        "Description is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
+        3600000,
+        1800000,
+        "",
+        "",
+        0,
+        0
+    )
+    AppTheme {
+        TaskItem(task = task, modifier = Modifier.size(height = 200.dp, width = 500.dp), isSupervisor = true)
     }
 }

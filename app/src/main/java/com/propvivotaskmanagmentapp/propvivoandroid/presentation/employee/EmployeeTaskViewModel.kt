@@ -18,6 +18,7 @@ import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunc
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunction.toLocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -67,7 +68,7 @@ class EmployeeTaskViewModel @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             userId = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ID, "")
             timeElapsed = employeeRepository.getTotalTime(userId, HelperFunction.todayDate.toLocalDate())
             updateTasks()
@@ -76,6 +77,7 @@ class EmployeeTaskViewModel @Inject constructor(
     }
     suspend fun updateTasks(){
         val tasks = employeeRepository.getAllTask(userId, HelperFunction.todayDate.toLocalDate())
+        Log.e("EmployeeTaskViewModel", "updateTasks: $tasks")
         state = state.copy(tasks = tasks)
     }
     fun startTimer(taskId: String) {

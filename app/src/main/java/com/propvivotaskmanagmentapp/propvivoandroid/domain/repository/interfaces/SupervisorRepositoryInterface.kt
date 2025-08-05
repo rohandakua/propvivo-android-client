@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces
 
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.TaskQuery
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.User
@@ -14,4 +15,7 @@ interface SupervisorRepositoryInterface {
 
     suspend fun getTaskQueryList(taskId: String) : List<TaskQuery>
 
+    suspend fun getEmployeeById(employeeId: String) : Employee
+
+    suspend fun getAllEmployee(): List<Employee>
 }

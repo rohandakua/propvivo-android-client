@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
@@ -9,6 +10,7 @@ import com.propvivotaskmanagmentapp.propvivoandroid.domain.util.FirebasePathCons
 import jakarta.inject.Inject
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -26,10 +28,12 @@ class EmployeesRepoImp @Inject constructor(
         employeeId: String,
         date: LocalDate
     ): List<Task> {
+        Log.e("EmployeesRepoImp", "getAllTask called : $employeeId")
         // Start and end of the given date in epoch millis
-        val startOfDay = date.atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000
-        val endOfDay = date.plusDays(1).atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000 - 1
+        val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
 
+        Log.e("EmployeesRepoImp", "getAllTask: $startOfDay $endOfDay")
         val snapshot = taskCollection
             .whereEqualTo("assignedTo", employeeId)
             .whereGreaterThanOrEqualTo("createdAt", startOfDay)
@@ -37,7 +41,9 @@ class EmployeesRepoImp @Inject constructor(
             .get()
             .await()
 
-        return snapshot.documents.mapNotNull { it.toObject<Task>()?.copy(id = it.id) }
+        val list =  snapshot.documents.mapNotNull { it.toObject<Task>()?.copy(id = it.id) }
+        Log.e("EmployeesRepoImp", "getAllTask: $list")
+        return list
     }
 
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,6 +54,13 @@ fun QueryScreenContent(
     state: QueryScreenState,
     onEvent: (QueryScreenEvent) -> Unit
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(state.messages.size) {
+        if (state.messages.isNotEmpty()) {
+            listState.animateScrollToItem(state.messages.size - 1)
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -105,11 +114,14 @@ fun QueryScreenContent(
                 Text("Talking to ${state.talkingTo}", color = MaterialTheme.colorScheme.onPrimaryContainer , fontWeight = FontWeight.Bold)
             }
 
+
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                state = listState
             ) {
                 items(state.messages.sortedBy { it.timestamp }) { message ->
                     val isUserMessage = if (state.userIsEmployee) {
@@ -147,6 +159,7 @@ fun QueryScreenContent(
                     }
                 }
             }
+
         }
     }
 }

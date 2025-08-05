@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.supervisor
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
@@ -35,7 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.AddTaskDialog
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.FilterDialog
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.TaskItem
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee.EmployeeTaskScreenEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
 
 @Composable
@@ -53,7 +57,25 @@ fun SupervisorDashboardScreen(
                 }
             }
     }
-
+    if(state.showAddTaskDialog){
+        Log.e("SupervisorDashboardScreen", "going to show add task dialog "+state.employeeOnlyList.toString())
+        AddTaskDialog(
+            employees = state.employeeOnlyList,
+            onDismissRequest = {
+                viewModel.onEvent(SupervisorDashboardEvent.DismissAddTaskDialog)
+            },
+            onSaveClick = { title, description, estimatedHours, selectedEmployeeId->
+                viewModel.onEvent(SupervisorDashboardEvent.SaveNewTaskClicked(title , description , estimatedHours, selectedEmployeeId?: "" ))
+            }
+        )
+    }
+    if(state.showFilterDialog){
+        FilterDialog(
+            employees = state.employeeOnlyList,
+            onDismissRequest = { viewModel.onEvent(SupervisorDashboardEvent.DismissFilterDialog) },
+            onSaveClick = { viewModel.onEvent(SupervisorDashboardEvent.FilterApplied(state.selectedEmployeeId ?: "")) }
+        )
+    }
     SupervisorDashboardScreenContent(
         state = state,
         onEvent = viewModel::onEvent
@@ -81,13 +103,30 @@ fun SupervisorDashboardScreenContent(
             }
         },
         bottomBar = {
-            Button(
-                onClick = { onEvent(SupervisorDashboardEvent.AddTaskClicked) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Add task")
+            Column {
+                state.errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+
+                Button(
+                    onClick = { onEvent(SupervisorDashboardEvent.AddTaskClicked) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("Add task")
+                }
             }
         }
     ) { padding ->
@@ -120,18 +159,21 @@ fun SupervisorDashboardScreenContent(
                                 border = ButtonDefaults.outlinedButtonBorder,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                                 )
                             ) {
                                 Column(Modifier.padding(12.dp)) {
                                     Text(
                                         employee.name,
-                                        style = MaterialTheme.typography.titleMedium
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                     Spacer(Modifier.height(8.dp))
                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                         employee.tasks.forEach { task ->
-                                            TaskItem(task = task)
+                                            TaskItem(task = task,
+                                                isSupervisor = true
+                                            )
                                         }
                                     }
                                 }
@@ -151,7 +193,20 @@ fun SupervisorDashboardPreview(modifier: Modifier = Modifier) {
     AppTheme {
         SupervisorDashboardScreenContent(
             state = SupervisorDashboardState(
-                employees = SupervisorDashboardViewModel.sampleEmployees
+                employees = SupervisorDashboardViewModel.sampleEmployees,
+                errorMessage = "this is an error"
+            ),
+            onEvent = {}
+        )
+    }
+}
+@Preview(showSystemUi = true)
+@Composable
+fun SupervisorDashboardPreview1(modifier: Modifier = Modifier) {
+    AppTheme {
+        SupervisorDashboardScreenContent(
+            state = SupervisorDashboardState(
+                employees = SupervisorDashboardViewModel.sampleEmployees,
             ),
             onEvent = {}
         )

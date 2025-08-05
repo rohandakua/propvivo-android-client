@@ -2,6 +2,7 @@ package com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImple
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.TaskQuery
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.User
@@ -19,7 +20,7 @@ class SupervisorRepoImp @Inject constructor(
     private val userCollection = firestore.collection(FirebasePathConstants.USERS)
     private val taskCollection = firestore.collection(FirebasePathConstants.TASKS)
     private val taskQueryCollection = firestore.collection(FirebasePathConstants.TASK_QUERIES)
-
+    private val employeeCollection = firestore.collection(FirebasePathConstants.EMPLOYEES)
     override suspend fun getAllEmployee(supervisorId: String): List<User> {
         val taskSnapshot = firestore.collection(FirebasePathConstants.TASKS)
             .whereEqualTo("assignedBy", supervisorId)
@@ -41,6 +42,19 @@ class SupervisorRepoImp @Inject constructor(
         }
 
         return userList
+    }
+
+    override suspend fun getAllEmployee(): List<Employee> {
+        val taskSnapshot = employeeCollection
+            .get()
+            .await()
+
+        return taskSnapshot.documents.mapNotNull { doc ->
+            doc.toObject(Employee::class.java)?.copy(
+                id = doc.id,
+                name = doc.getString("name") ?: "",
+            )
+        }
     }
 
 
@@ -78,4 +92,8 @@ class SupervisorRepoImp @Inject constructor(
         return snapshot.documents.mapNotNull { it.toObject<TaskQuery>()?.copy(id = it.id) }
     }
 
+    override suspend fun getEmployeeById(employeeId: String): Employee {
+        val snapshot = employeeCollection.document(employeeId).get().await()
+        return snapshot.toObject<Employee>() ?: Employee(id = "", name = "")
+    }
 }

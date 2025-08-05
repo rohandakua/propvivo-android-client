@@ -85,7 +85,7 @@ fun EmployeeTaskScreen(
                 viewModel.onEvent(EmployeeTaskScreenEvent.DismissAddTaskDialog)
             },
             onSaveClick = { title, description, estimatedHours, selectedEmployeeId->
-                viewModel.onEvent(EmployeeTaskScreenEvent.SaveNewTaskClicked(title , description , estimatedHours, selectedEmployeeId ))
+                viewModel.onEvent(EmployeeTaskScreenEvent.SaveNewTaskClicked(title , description , estimatedHours, null))
             }
         )
     }
