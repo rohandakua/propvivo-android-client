@@ -10,7 +10,6 @@ import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.Prefere
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.Role
-import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.PreferenceDataStoreInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.RegisterUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignInUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
@@ -76,6 +75,7 @@ class AuthViewModel @Inject constructor(
                         dataStoreHelper.putPreference(dsConstants.USER_ROLE, it.role)
                         dataStoreHelper.putPreference(dsConstants.USER_NAME, it.name)
                         dataStoreHelper.putPreference(dsConstants.USER_EMAIL, it.email)
+                        state = state.copy(role = Role.valueOf(it.role))
                         Log.e("AuthViewModel", "User logged in successfully")
                         onLoginSuccess()
                     }

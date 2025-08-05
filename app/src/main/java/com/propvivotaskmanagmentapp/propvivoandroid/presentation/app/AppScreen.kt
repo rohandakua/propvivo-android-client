@@ -10,6 +10,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,18 +24,26 @@ import com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee.starti
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.querychat.QueryScreen
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.supervisor.SupervisorDashboardScreen
-
 @Composable
 fun AppScreen(
     modifier: Modifier = Modifier,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val navController = rememberNavController()
+    val state = viewModel.state
+
+    LaunchedEffect(state.isLoading) {
+        if (!state.isLoading) {
+            navController.navigate(state.startDestination) {
+                popUpTo(0)
+            }
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        if (viewModel.state.isLoading) {
+        if (state.isLoading) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -42,7 +51,7 @@ fun AppScreen(
             ) {
                 CircularProgressIndicator()
             }
-        } else {
+        }else {
 
             NavHost(
                 navController = navController,
@@ -50,57 +59,27 @@ fun AppScreen(
                     .padding(paddingValues)
                     .consumeWindowInsets(paddingValues)
                     .imePadding(),
-                startDestination = viewModel.state.startDestination ?: AppDestination.Login.route
+                startDestination = AppDestination.Login.route
             ) {
-                composable(
-                    route = AppDestination.Login.route,
-                ) {
-                    AuthScreen(
-                        navController = navController
-                    )
+                composable(AppDestination.Login.route) {
+                    AuthScreen(navController = navController)
                 }
-
-                composable(
-                    route = AppDestination.EmployeeFirstScreen.route
-                ) {
-                    EmployeeStartTaskScreen(
-                        navController = navController
-                    )
+                composable(AppDestination.EmployeeFirstScreen.route) {
+                    EmployeeStartTaskScreen(navController = navController)
                 }
-
-                composable(
-                    route = AppDestination.AdminDashboard.route
-                ) {
-                    AdminDashboardScreen(
-                        navController = navController
-                    )
+                composable(AppDestination.AdminDashboard.route) {
+                    AdminDashboardScreen(navController = navController)
                 }
-
-                composable(
-                    route = AppDestination.EmployeeDashboard.route
-                ) {
-                    EmployeeTaskScreen(
-                        navController = navController
-                    )
+                composable(AppDestination.EmployeeDashboard.route) {
+                    EmployeeTaskScreen(navController = navController)
                 }
-
-                composable(
-                    route = AppDestination.TaskQueryScreen(false).route
-                ) {
+                composable(AppDestination.TaskQueryScreen(false).route) {
                     QueryScreen()
                 }
-
-                composable(
-                    route = AppDestination.SupervisorDashboard.route
-                ) {
-                    SupervisorDashboardScreen(
-                        navController = navController
-                    )
+                composable(AppDestination.SupervisorDashboard.route) {
+                    SupervisorDashboardScreen(navController = navController)
                 }
-
-
             }
         }
-
     }
 }

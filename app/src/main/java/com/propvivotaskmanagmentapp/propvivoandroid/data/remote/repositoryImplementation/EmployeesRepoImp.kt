@@ -9,6 +9,7 @@ import com.propvivotaskmanagmentapp.propvivoandroid.domain.util.FirebasePathCons
 import jakarta.inject.Inject
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
@@ -25,15 +26,21 @@ class EmployeesRepoImp @Inject constructor(
         employeeId: String,
         date: LocalDate
     ): List<Task> {
-        val formattedDate = date.format(dateFormatter)
+        // Start and end of the given date in epoch millis
+        val startOfDay = date.atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000
+        val endOfDay = date.plusDays(1).atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000 - 1
+
         val snapshot = taskCollection
-            .whereEqualTo("id", employeeId)
-            .whereEqualTo("date", formattedDate)
+            .whereEqualTo("assignedTo", employeeId)
+            .whereGreaterThanOrEqualTo("createdAt", startOfDay)
+            .whereLessThanOrEqualTo("createdAt", endOfDay)
             .get()
             .await()
 
         return snapshot.documents.mapNotNull { it.toObject<Task>()?.copy(id = it.id) }
     }
+
+
 
     override suspend fun getTaskQueryList(
         taskId: String
@@ -54,7 +61,7 @@ class EmployeesRepoImp @Inject constructor(
 
     override suspend fun updateTaskTimeSpent(updatedTime: Long, taskId: String) {
         taskCollection.document(taskId)
-            .update("timeSpentInMs", updatedTime)
+            .update("timeSpentMs", updatedTime)
             .await()
         taskCollection.document(taskId)
             .update("updatedAt", System.currentTimeMillis())
@@ -71,10 +78,8 @@ class EmployeesRepoImp @Inject constructor(
         docRef.update("totalTime", updatedTime)
             .addOnFailureListener {
                 docRef.set(
-                    mapOf(
-                        "date" to formattedDate,
                         "totalTime" to updatedTime
-                    )
+
                 )
             }.await()
     }

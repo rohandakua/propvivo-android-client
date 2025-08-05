@@ -49,7 +49,10 @@ fun AuthScreen(
         viewModel.navigationEvent
             .collect { event ->
                 when (event) {
-                    is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+                    is NavigationEvent.NavigateTo -> navController.navigate(event.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
                     is NavigationEvent.NavigateBack -> navController.popBackStack()
                 }
             }
@@ -82,7 +85,6 @@ fun AuthScreenContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Toggle buttons
         Row {
             TextButton(
                 onClick = { onEvent(AuthEvent.ToggleAuthMode(true)) },

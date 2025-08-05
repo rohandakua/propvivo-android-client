@@ -10,5 +10,5 @@ data class EmployeeTaskScreenState(
     val timerPerTask : String= "",
     val errorMessage: String? = null,
     val showAddTaskDialog: Boolean = false,
-
+    val isTimerWorking: Boolean = false,
 )

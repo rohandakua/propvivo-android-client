@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.app
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,28 +26,32 @@ class AppViewModel @Inject constructor(
         private set
 
     init {
-        state = state.copy(isLoading = true)
-        getStartDestination()
+        callEachTime()
 
     }
-    fun getStartDestination(){
+    fun callEachTime(){
         viewModelScope.launch {
-            val userId = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ID, "")
-            val userName = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_NAME, "")
-            val userRole = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ROLE, "")
-            val userEmail = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_EMAIL, "")
-            val user = User(userId, userName, userEmail, userRole)
-            val timeSpentToday = employeesRepository.getTotalTime(userId, HelperFunction.todayDate.toLocalDate())
-            state = state.copy(user = user)
-            if(user.role == "Employee"){
-                state = state.copy(isEmployeeInFirstScreen = timeSpentToday==0L )
-            }else if(user.role == "Supervisor"){
-                state = state.copy(isEmployeeInFirstScreen = false)
-            }else if(user.role == "Admin"){
-                state = state.copy(isEmployeeInFirstScreen = false)
-            }
-            state = state.copy(isLoading = false)
+            state = state.copy(isLoading = true, user = null)
+            getStartDestination()
         }
+    }
+
+    suspend fun getStartDestination() {
+        val userId = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ID, "")
+        val userName = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_NAME, "")
+        val userRole = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ROLE, "")
+        val userEmail = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_EMAIL, "")
+        val user = User(uid = userId, email = userEmail, role = userRole, name = userName)
+        Log.e("getStartDestination", user.toString())
+        val timeSpentToday =
+            employeesRepository.getTotalTime(userId, HelperFunction.todayDate.toLocalDate())
+        when (user.role) {
+            "Employee" -> {
+                state = state.copy(isEmployeeInFirstScreen = timeSpentToday == 0L)
+            }
+        }
+        state = state.copy(user = user, isLoading = false)
+
     }
 
 }

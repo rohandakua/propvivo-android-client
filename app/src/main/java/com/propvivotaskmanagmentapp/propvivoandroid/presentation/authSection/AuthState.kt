@@ -7,7 +7,7 @@ data class AuthState(
     val isSignIn: Boolean = true,
     val email: String = "",
     val password: String = "",
-    val role: Role = Role.Employee, // Used in registration
+    val role: Role = Role.Employee,
     val errorMessage: String? = null,
     val name: String = ""
 )

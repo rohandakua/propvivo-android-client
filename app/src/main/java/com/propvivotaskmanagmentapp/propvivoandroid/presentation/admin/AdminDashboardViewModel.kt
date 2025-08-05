@@ -45,10 +45,8 @@ class AdminDashboardViewModel @Inject constructor(
             AdminDashboardEvent.Logout -> {
                 viewModelScope.launch {
                     signOutUseCase.invoke()
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_ID)
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_NAME)
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_EMAIL)
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_ROLE)
+
+                    preferenceDataStoreHelper.clearAllPreference()
 
                     _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.Login.route))
                 }

@@ -1,7 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee
 
 import android.util.Log
-import androidx.compose.material3.NavigationRail
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,11 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.dsConstants
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent.NavigateTo
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.EmployeesRepositoryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.usecases.auth.SignOutUseCase
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.navigation.AppDestination
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunction
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.util.HelperFunction.toLocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import java.time.LocalDate
 
 @HiltViewModel
@@ -45,15 +45,23 @@ class EmployeeTaskViewModel @Inject constructor(
 
     fun onQueryClicked() {
         viewModelScope.launch {
-            _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(true).destination))
+            if (state.selectedTask != null && state.selectedTask?.assignedBy == state.selectedTask?.assignedTo) {
+                state = state.copy(errorMessage = "You cannot raise a query for your own task")
+                return@launch
+            } else if (state.selectedTask == null) {
+                state = state.copy(errorMessage = "Select a task first")
+                return@launch
+            } else
+                _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(true).destination))
+
         }
     }
 
     private var timerJob: Job? = null
     private var timeElapsed: Long = 0L
 
-    private var timePerTask : Long = 0L
-    private val saveIntervalMs = 10 * 60 * 1000L // 10 minutes
+    private var timePerTask: Long = 0L
+    private val saveIntervalMs = 60 * 1000L
 
     private var userId = ""
 
@@ -61,38 +69,48 @@ class EmployeeTaskViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             userId = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ID, "")
-
-            val tasks = employeeRepository.getAllTask(userId, LocalDate.now())
-            state = state.copy(tasks = tasks )
+            timeElapsed = employeeRepository.getTotalTime(userId, HelperFunction.todayDate.toLocalDate())
+            updateTasks()
+            updateTimerText()
         }
     }
-
+    suspend fun updateTasks(){
+        val tasks = employeeRepository.getAllTask(userId, HelperFunction.todayDate.toLocalDate())
+        state = state.copy(tasks = tasks)
+    }
     fun startTimer(taskId: String) {
         timerJob?.cancel()
+        state = state.copy(isTimerWorking = true)
         timerJob = viewModelScope.launch {
             while (isActive) {
                 delay(10000)
                 timeElapsed += 10000
-                timePerTask +=10000
+                timePerTask += 10000
                 updateTimerText()
-
                 if (timeElapsed % saveIntervalMs == 0L) {
                     val userId =
                         preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ID, "")
                     employeeRepository.updateTaskTimeSpent(timePerTask, taskId)
                     employeeRepository.updateTotalTime(userId, timeElapsed, LocalDate.now())
+                    val tasks = employeeRepository.getAllTask(userId, HelperFunction.todayDate.toLocalDate())
+                    state = state.copy(tasks = tasks)
                 }
             }
         }
     }
 
     private fun updateTimerText() {
-        state = state.copy(timerText = HelperFunction.formatMillisToHoursAndMinutes(timeElapsed)
-        , timerPerTask = HelperFunction.formatMillisToHoursAndMinutes(timePerTask))
+        Log.e("EmployeeTaskViewModel", "updateTimerText: $timeElapsed")
+        Log.e("EmployeeTaskViewModel", "updateTimerText: $timePerTask")
+        state = state.copy(
+            timerText = HelperFunction.formatMillisToHoursAndMinutes(timeElapsed),
+            timerPerTask = HelperFunction.formatMillisToHoursAndMinutes(timePerTask)
+        )
     }
 
     fun stopTimer() {
         timerJob?.cancel()
+        state = state.copy(isTimerWorking = false)
         timerJob = null
     }
 
@@ -112,15 +130,51 @@ class EmployeeTaskViewModel @Inject constructor(
                     timerText = "Break: %02d:%02d".format(
                         breakTime / 60,
                         breakTime % 60
-                    ),
+                    )
                 )
             }
             state = state.copy(showBreakDialog = false)
         }
     }
 
+    private fun addNewTask(
+        title: String,
+        description: String,
+        estimatedTime: String,
+        selectedEmployeeId: String?
+    ) {
+        viewModelScope.launch {
+            Log.e(
+                "EmployeeTaskViewModel",
+                "going to add new task"
+            )
+            val newTask = Task(
+                title = title,
+                description = description,
+                estimatedTimeMs = estimatedTime.toLong() * (60 * 60 * 1000),
+                timeSpentMs = 0,
+                assignedBy = userId,
+                assignedTo = userId,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = 0,
+                id = ""
+            )
+            employeeRepository.addTask(newTask)
+            updateTasks()
+
+            state = state.copy(showAddTaskDialog = false)
+
+        }
+    }
+    fun dismissBreakDialog() {
+        timerJob?.cancel() // cancel break timer
+        timerJob = null
+        state = state.copy(showBreakDialog = false)
+        updateTimerText()
+    }
 
     fun onEvent(event: EmployeeTaskScreenEvent) {
+        state = state.copy(errorMessage = null)
         when (event) {
             is EmployeeTaskScreenEvent.SelectTask -> {
 
@@ -139,7 +193,7 @@ class EmployeeTaskViewModel @Inject constructor(
                     stopTimer()
                 } else {
                     state.selectedTask?.let { startTimer(it.id) }
-                    if(state.selectedTask == null){
+                    if (state.selectedTask == null) {
                         state = state.copy(errorMessage = "Select a task first")
                     }
                 }
@@ -147,6 +201,10 @@ class EmployeeTaskViewModel @Inject constructor(
 
             is EmployeeTaskScreenEvent.RaiseQuery -> {
                 onQueryClicked()
+            }
+
+            is EmployeeTaskScreenEvent.SaveNewTaskClicked -> {
+                addNewTask(event.title, event.description, event.estimatedTime, event.selectedEmployeeId)
             }
 
             EmployeeTaskScreenEvent.TakeBreak -> {
@@ -160,13 +218,10 @@ class EmployeeTaskViewModel @Inject constructor(
             EmployeeTaskScreenEvent.Logout -> {
                 viewModelScope.launch {
                     signOutUseCase.invoke()
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_ID)
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_NAME)
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_EMAIL)
-                    preferenceDataStoreHelper.removePreference(dsConstants.USER_ROLE)
+                    preferenceDataStoreHelper.clearAllPreference()
                 }
                 viewModelScope.launch {
-                    _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.Login.route))
+                    _navigationEvent.emit(NavigateTo(AppDestination.Login.route))
                 }
             }
 
@@ -179,60 +234,60 @@ class EmployeeTaskViewModel @Inject constructor(
                                 it.id
                             )
                         }
-                        Log.e(
-                            "EmployeeTaskViewModel",
-                            "going to update the total time"
-                        )
                         employeeRepository.updateTotalTime(userId, timeElapsed, LocalDate.now())
-                    }catch (e: Exception){
+                    } catch (e: Exception) {
                         Log.e(
                             "EmployeeTaskViewModel",
                             "Error updating task time spent or total time: ${e.message}"
                         )
                     }
                     stopTimer()
-                    _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.EmployeeFirstScreen.route))
+                    _navigationEvent.emit(NavigateTo(AppDestination.EmployeeFirstScreen.route))
                 }
 
+            }
+
+            EmployeeTaskScreenEvent.DismissAddTaskDialog -> {
+                state = state.copy(showAddTaskDialog = false)
             }
         }
     }
 
     companion object {
-        val sampleTasks = listOf(
-            Task(
-                "1",
-                "Task 1",
-                "Description escription is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
-                3600000,
-                1800000,
-                "",
-                "",
-                0,
-                0
-            ),
-            Task(
-                "2",
-                "Task 2",
-                "Description is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
-                7200000,
-                3000000,
-                "",
-                "",
-                0,
-                0
-            ),
-            Task(
-                "3",
-                "Task 3",
-                "Description is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
-                1800000,
-                1000000,
-                "",
-                "",
-                0,
-                0
-            ),
-        )
+        val sampleTasks = listOf<Task>()
+//            Task(
+//                "1",
+//                "Task 1",
+//                "Description escription is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
+//                3600000,
+//                1800000,
+//                "",
+//                "",
+//                0,
+//                0
+//            ),
+//            Task(
+//                "2",
+//                "Task 2",
+//                "Description is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
+//                7200000,
+//                3000000,
+//                "",
+//                "",
+//                0,
+//                0
+//            ),
+//            Task(
+//                "3",
+//                "Task 3",
+//                "Description is this description and thhis is the only description Create new scratch file from selection Create new scratch file from selection Create new scratch file from selection",
+//                1800000,
+//                1000000,
+//                "",
+//                "",
+//                0,
+//                0
+//            ),
+//        )
     }
 }

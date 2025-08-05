@@ -97,7 +97,7 @@ fun TaskItem(
                             )
                         }
                         Icon(
-                            painter = painterResource(if (isTimerWorking) R.drawable.play else R.drawable.pause),
+                            painter = painterResource(if (!isTimerWorking) R.drawable.play else R.drawable.pause),
                             contentDescription = "play/pause",
                             modifier = Modifier.size(28.dp).clickable { onPauseResumeClick() }
                         )
