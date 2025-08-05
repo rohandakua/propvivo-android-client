@@ -29,15 +29,22 @@ sealed class AppDestination(
         route = "adminDashboard"
     )
 
-    data class TaskQueryScreen( val userIsEmployee: Boolean): AppDestination(
-        route = "taskQueryScreen?UserIsEmployee={userIsEmployee}",
-        destination = "taskQueryScreen${if (userIsEmployee) "?UserIsEmployee=true" else "?UserIsEmployee=true"}",
+    data class TaskQueryScreen(
+        val userIsEmployee: Boolean,
+        val taskId: String
+    ) : AppDestination(
+        route = "taskQueryScreen?userIsEmployee={userIsEmployee}&taskId={taskId}",
+        destination = "taskQueryScreen?userIsEmployee=$userIsEmployee&taskId=$taskId",
         args = listOf(
             navArgument("userIsEmployee") {
                 type = NavType.BoolType
-                nullable = false
-                defaultValue = true
+            },
+            navArgument("taskId") {
+                type = NavType.StringType
             }
         )
     )
+
+
+
 }

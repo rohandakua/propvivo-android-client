@@ -2,6 +2,7 @@ package com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interface
 
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.TaskQueryStatus
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Message
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 
 interface TaskQueryInterface {
     suspend fun getAllMessages(taskQueryId: String) : List<Message>
@@ -10,4 +11,5 @@ interface TaskQueryInterface {
 
     suspend fun updateQueryStatus ( taskQueryId: String, taskQueryStatus: TaskQueryStatus)
 
+    suspend fun getTask(taskId: String): Task?
 }

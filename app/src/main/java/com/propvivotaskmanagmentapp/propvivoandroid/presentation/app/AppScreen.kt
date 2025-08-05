@@ -14,9 +14,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.admin.AdminDashboardScreen
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.authSection.AuthScreen
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee.EmployeeTaskScreen
@@ -73,9 +75,14 @@ fun AppScreen(
                 composable(AppDestination.EmployeeDashboard.route) {
                     EmployeeTaskScreen(navController = navController)
                 }
-                composable(AppDestination.TaskQueryScreen(false).route) {
+                composable(
+                    route = AppDestination.TaskQueryScreen(false, "").route,
+                    arguments = AppDestination.TaskQueryScreen(false, "").args
+                ) {
                     QueryScreen()
                 }
+
+
                 composable(AppDestination.SupervisorDashboard.route) {
                     SupervisorDashboardScreen(navController = navController)
                 }

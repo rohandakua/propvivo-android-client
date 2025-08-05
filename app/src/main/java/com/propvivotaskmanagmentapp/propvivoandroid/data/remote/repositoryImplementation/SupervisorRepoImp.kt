@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
@@ -93,6 +94,10 @@ class SupervisorRepoImp @Inject constructor(
     }
 
     override suspend fun getEmployeeById(employeeId: String): Employee {
+        Log.e("SupervisorRepoImp", "going to get employee by id $employeeId")
+        if(employeeId.isEmpty()){
+            return Employee(id = "", name = "")
+        }
         val snapshot = employeeCollection.document(employeeId).get().await()
         return snapshot.toObject<Employee>() ?: Employee(id = "", name = "")
     }

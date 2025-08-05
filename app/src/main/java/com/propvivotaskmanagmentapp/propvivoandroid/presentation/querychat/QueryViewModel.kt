@@ -4,11 +4,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.propvivotaskmanagmentapp.propvivoandroid.data.local.datastore.PreferenceDataStoreHelper
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Message
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.TaskQueryInterface
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @HiltViewModel
@@ -17,17 +21,82 @@ class QueryViewModel @Inject constructor(
     private val queryRepository: TaskQueryInterface,
     savedStateHandle: androidx.lifecycle.SavedStateHandle
     ) : ViewModel() {
-
-    val isUserEmployee = savedStateHandle.get<Boolean>("UserIsEmployee")
+    val isUserEmployee = savedStateHandle.get<Boolean>("userIsEmployee")
+    val taskId = savedStateHandle.get<String>("taskId")
     var state by mutableStateOf(
         QueryScreenState(
-            userIsEmployee = isUserEmployee?: true, // or false based on user role
-            talkingTo = "Supervisor",
-            messages = sampleMessages
+            userIsEmployee = isUserEmployee?: true,
+            talkingTo = if(isUserEmployee?: true) "Supervisor" else "Employee",
         )
     )
+    init {
+        getTask()
+        viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                getMessages()
+                updateCanTalk()
+                delay(10000)
+            }
+        }
+    }
+    fun updateCanTalk(){
+        if(state.task.assignedTo == state.task.assignedBy){
+            state = state.copy(errorMessage = "Can't talk to the Employee (Self Task)", canTalk = false)
+        }else{
+            state = state.copy(canTalk = true , errorMessage = "")
+        }
+    }
+    fun getTask(){
+        viewModelScope.launch(Dispatchers.IO) {
+            state = state.copy(isLoading = true , isMessageLoading = true)
+            if (taskId != null) {
+                val task = queryRepository.getTask(taskId)
+                if(task != null) {
+                    state = state.copy(task = task , isLoading = false)
+                }else{
+                    state = state.copy(errorMessage = "Task not found", isLoading = false)
+                }
+            }else{
+                state = state.copy(errorMessage = "Task not found", isLoading = false)
+
+            }
+        }
+    }
+
+    fun getMessages(){
+        viewModelScope.launch(Dispatchers.IO) {
+            state = state.copy(isMessageLoading = true)
+            if (taskId != null) {
+                val messages = queryRepository.getAllMessages(taskId)
+                state = state.copy(messages = messages, isMessageLoading = false)
+            }else{
+                state = state.copy(errorMessage = "Task not found", isMessageLoading = false)
+            }
+        }
+    }
+
+    fun sendMessage (){
+        viewModelScope.launch(Dispatchers.IO) {
+            if(!state.canTalk){
+                state = state.copy(errorMessage = "Can't talk to the Employee (Self Task)")
+                return@launch
+            }
+            val newMessage = Message(
+                timestamp = System.currentTimeMillis(),
+                sendByEmployee = state.userIsEmployee,
+                taskQueryId = state.task.id,
+                content = state.newMessage.trim()
+            )
+            state = state.copy(
+                newMessage = ""
+            )
+            queryRepository.sendMessage(newMessage)
+            getMessages()
+        }
+    }
 
     fun onEvent(event: QueryScreenEvent) {
+        state = state.copy(errorMessage = "")
         when (event) {
             is QueryScreenEvent.MessageChanged -> {
                 state = state.copy(newMessage = event.value)
@@ -35,18 +104,9 @@ class QueryViewModel @Inject constructor(
 
             is QueryScreenEvent.SendMessage -> {
                 if (state.newMessage.isNotBlank()) {
-                    val newMessage = Message(
-                        id = UUID.randomUUID().toString(),
-                        timestamp = System.currentTimeMillis(),
-                        sendByEmployee = state.userIsEmployee,
-                        taskQueryId = "task1", // replace with dynamic if needed
-                        content = state.newMessage.trim()
-                    )
-
-                    state = state.copy(
-                        messages = state.messages + newMessage,
-                        newMessage = ""
-                    )
+                    sendMessage()
+                } else {
+                    state = state.copy(errorMessage = "Message cannot be empty")
                 }
             }
         }

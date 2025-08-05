@@ -36,7 +36,8 @@ class AdminDashboardViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val employees = adminRepository.getAllEmployeeWithStatus(todayDate)
-            _state.value = _state.value.copy(employees = employees)
+            val noOfTask = adminRepository.getTotalNoOfTask(todayDate)
+            _state.value = _state.value.copy(employees = employees,noOfTask = noOfTask, isLoading = false)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -128,19 +130,18 @@ fun TaskItem(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BadgedBox(
-                        modifier = Modifier.clickable { onQueryClick() },
-                        badge = {
-                            if (messageArrived) {
-                                Badge()
-                            }
-                        }) {
+                    IconButton(onClick = {
+                        Log.e("Button" , "Clicked" )
+                        onQueryClick() }) {
+
+
                         Icon(
                             painter = painterResource(R.drawable.chat),
                             contentDescription = "chat",
                             modifier = Modifier.size(28.dp)
                         )
                     }
+
                 }
                 Spacer(modifier = Modifier.size(10.dp))
             }

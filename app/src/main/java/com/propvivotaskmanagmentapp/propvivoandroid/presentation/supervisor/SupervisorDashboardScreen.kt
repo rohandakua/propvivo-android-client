@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.AddTaskDialog
@@ -47,7 +48,7 @@ fun SupervisorDashboardScreen(
     viewModel: SupervisorDashboardViewModel = hiltViewModel(),
     navController : NavHostController
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         viewModel.navigationEvent
             .collect { event ->
@@ -73,7 +74,10 @@ fun SupervisorDashboardScreen(
         FilterDialog(
             employees = state.employeeOnlyList,
             onDismissRequest = { viewModel.onEvent(SupervisorDashboardEvent.DismissFilterDialog) },
-            onSaveClick = { viewModel.onEvent(SupervisorDashboardEvent.FilterApplied(state.selectedEmployeeId ?: "")) }
+            onSaveClick = { selectedId ->
+                viewModel.onEvent(SupervisorDashboardEvent.FilterApplied(selectedId))
+            }
+
         )
     }
     SupervisorDashboardScreenContent(
@@ -136,7 +140,7 @@ fun SupervisorDashboardScreenContent(
                 .padding(padding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 100.dp) // ensures space for bottom button
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
                 Card(
@@ -144,7 +148,7 @@ fun SupervisorDashboardScreenContent(
                     border = ButtonDefaults.outlinedButtonBorder,
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 ) {
                     Column(
@@ -172,7 +176,10 @@ fun SupervisorDashboardScreenContent(
                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                         employee.tasks.forEach { task ->
                                             TaskItem(task = task,
-                                                isSupervisor = true
+                                                isSupervisor = true,
+                                                onQueryClick = {
+                                                    Log.e("Query clicked","query clicked")
+                                                    onEvent(SupervisorDashboardEvent.ResolveQuery(task.id))}
                                             )
                                         }
                                     }

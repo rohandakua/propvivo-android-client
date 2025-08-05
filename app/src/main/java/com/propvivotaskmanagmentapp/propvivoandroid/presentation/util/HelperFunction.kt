@@ -13,20 +13,21 @@ object HelperFunction {
         return "${hours} hr ${minutes} min"
     }
 
-    fun getDayBounds(date: Date): Pair<Date, Date> {
+    fun getDayBounds(date: Date): Pair<Long, Long> {
         val calendar = Calendar.getInstance()
         calendar.time = date
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
-        val start = calendar.time
+        val startMillis = calendar.timeInMillis
 
         calendar.add(Calendar.DAY_OF_MONTH, 1)
-        val end = calendar.time
+        val endMillis = calendar.timeInMillis
 
-        return Pair(start, end)
+        return Pair(startMillis, endMillis)
     }
+
 
     val todayDate: Date = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
 

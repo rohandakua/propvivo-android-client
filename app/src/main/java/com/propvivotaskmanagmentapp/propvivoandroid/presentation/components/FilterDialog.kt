@@ -28,7 +28,7 @@ import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
 fun FilterDialog(
     employees: List<Employee>?,
     onDismissRequest: () -> Unit,
-    onSaveClick: () -> Unit
+    onSaveClick: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -41,7 +41,8 @@ fun FilterDialog(
             Button(
                 onClick = {
                     Log.e("alert dialog box","saved clicked")
-                    onSaveClick()
+                    selectedEmployeeId?.let { onSaveClick(it) }
+
                 },
                 enabled = selectedEmployeeId!=null || (selectedEmployeeId?: "").isNotBlank()
             ) {

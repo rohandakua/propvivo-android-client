@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImplementation
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Employee
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
@@ -32,6 +33,7 @@ class AdminRepoImp @Inject constructor(
 
     override suspend fun getAllEmployeeWithStatus(date: Date): List<Employee> {
         val (start, end) = getDayBounds(date)
+        Log.e("admin", "start: $start, end: $end")
 
         // Step 1: Fetch all tasks created on the given date
         val taskSnapshot = firestore.collection(FirebasePathConstants.TASKS)

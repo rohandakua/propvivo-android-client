@@ -3,6 +3,7 @@ package com.propvivotaskmanagmentapp.propvivoandroid.data.remote.repositoryImple
 import com.google.firebase.firestore.FirebaseFirestore
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.TaskQueryStatus
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Message
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.repository.interfaces.TaskQueryInterface
 import com.propvivotaskmanagmentapp.propvivoandroid.domain.util.FirebasePathConstants
 import jakarta.inject.Inject
@@ -11,7 +12,7 @@ import kotlinx.coroutines.tasks.await
 class TaskQueryRepoImp @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : TaskQueryInterface {
-
+    private val taskCollection = firestore.collection(FirebasePathConstants.TASKS)
     override suspend fun getAllMessages(taskQueryId: String): List<Message> {
         val snapshot = firestore.collection(FirebasePathConstants.TASK_QUERIES)
             .document(taskQueryId)
@@ -43,5 +44,9 @@ class TaskQueryRepoImp @Inject constructor(
             .document(taskQueryId)
             .update("taskStatus", taskQueryStatus.name)
             .await()
+    }
+    override suspend fun getTask(taskId: String): Task? {
+        val snapshot = taskCollection.document(taskId).get().await()
+        return snapshot.toObject(Task::class.java)
     }
 }

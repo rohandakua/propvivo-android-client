@@ -47,9 +47,9 @@ class SupervisorDashboardViewModel @Inject constructor(
         getAllEmployee()
     }
 
-    fun onQueryClicked() {
+    fun onQueryClicked(taskId: String) {
         viewModelScope.launch {
-            _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(false).destination))
+            _navigationEvent.emit(NavigateTo(AppDestination.TaskQueryScreen(false, taskId).destination))
         }
     }
 
@@ -145,10 +145,6 @@ class SupervisorDashboardViewModel @Inject constructor(
                 _state.value = _state.value.copy(selectedEmployeeId = event.employeeId)
             }
 
-            is SupervisorDashboardEvent.SelectTask -> {
-                onQueryClicked()
-            }
-
             is SupervisorDashboardEvent.AddTaskClicked -> {
                 // Future: show add task dialog
                 _state.value = _state.value.copy(showAddTaskDialog = true)
@@ -170,6 +166,10 @@ class SupervisorDashboardViewModel @Inject constructor(
             is SupervisorDashboardEvent.FilterApplied -> {
                 _state.value = _state.value.copy(selectedEmployeeId = event.employeeId)
                 getListByEmployeeId()
+                _state.value = _state.value.copy(showFilterDialog = false)
+            }
+            is SupervisorDashboardEvent.ResolveQuery -> {
+                onQueryClicked(event.taskId)
             }
 
             SupervisorDashboardEvent.Logout -> {
@@ -193,6 +193,8 @@ class SupervisorDashboardViewModel @Inject constructor(
             SupervisorDashboardEvent.DismissFilterDialog -> {
                 _state.value = _state.value.copy(showFilterDialog = false)
             }
+
+
         }
     }
 
