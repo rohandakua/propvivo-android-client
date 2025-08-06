@@ -131,7 +131,6 @@ fun TaskItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
-                        Log.e("Button" , "Clicked" )
                         onQueryClick() }) {
 
 

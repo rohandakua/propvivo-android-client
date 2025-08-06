@@ -76,7 +76,6 @@ class AuthViewModel @Inject constructor(
                         dataStoreHelper.putPreference(dsConstants.USER_NAME, it.name)
                         dataStoreHelper.putPreference(dsConstants.USER_EMAIL, it.email)
                         state = state.copy(role = Role.valueOf(it.role))
-                        Log.e("AuthViewModel", "User logged in successfully")
                         onLoginSuccess()
                     }
                     .onFailure {

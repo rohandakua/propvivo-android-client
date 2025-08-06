@@ -28,12 +28,9 @@ class EmployeesRepoImp @Inject constructor(
         employeeId: String,
         date: LocalDate
     ): List<Task> {
-        Log.e("EmployeesRepoImp", "getAllTask called : $employeeId")
-        // Start and end of the given date in epoch millis
         val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
 
-        Log.e("EmployeesRepoImp", "getAllTask: $startOfDay $endOfDay")
         val snapshot = taskCollection
             .whereEqualTo("assignedTo", employeeId)
             .whereGreaterThanOrEqualTo("createdAt", startOfDay)
@@ -42,7 +39,6 @@ class EmployeesRepoImp @Inject constructor(
             .await()
 
         val list =  snapshot.documents.mapNotNull { it.toObject<Task>()?.copy(id = it.id) }
-        Log.e("EmployeesRepoImp", "getAllTask: $list")
         return list
     }
 

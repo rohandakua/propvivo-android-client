@@ -63,7 +63,6 @@ fun AddTaskDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    Log.e("alert dialog box","saved clicked")
                     onSaveClick(title, description, estimatedTime, selectedEmployeeId)
                 },
                 enabled = title.isNotBlank() && description.isNotBlank() && estimatedTime.isNotBlank()
@@ -101,7 +100,6 @@ fun AddTaskDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Show dropdown only if employees list is not null or empty
                 if (!employees.isNullOrEmpty()) {
                     ExposedDropdownMenuBox(
                         expanded = expanded,

@@ -42,7 +42,6 @@ class AppViewModel @Inject constructor(
         val userRole = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_ROLE, "")
         val userEmail = preferenceDataStoreHelper.getFirstPreference(dsConstants.USER_EMAIL, "")
         val user = User(uid = userId, email = userEmail, role = userRole, name = userName)
-        Log.e("getStartDestination", user.toString())
         val timeSpentToday =
             employeesRepository.getTotalTime(userId, HelperFunction.todayDate.toLocalDate())
         when (user.role) {

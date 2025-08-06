@@ -33,9 +33,6 @@ class AdminRepoImp @Inject constructor(
 
     override suspend fun getAllEmployeeWithStatus(date: Date): List<Employee> {
         val (start, end) = getDayBounds(date)
-        Log.e("admin", "start: $start, end: $end")
-
-        // Step 1: Fetch all tasks created on the given date
         val taskSnapshot = firestore.collection(FirebasePathConstants.TASKS)
             .whereGreaterThanOrEqualTo("createdAt", start)
             .whereLessThan("createdAt", end)
