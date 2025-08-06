@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.querychat
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,10 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +45,7 @@ fun QueryScreen(
     viewModel: QueryViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
+    LaunchedEffect(Unit) {viewModel.updateCanTalk() }
     QueryScreenContent(
         state = state,
         onEvent = viewModel::onEvent
@@ -52,6 +58,14 @@ fun QueryScreenContent(
     state: QueryScreenState,
     onEvent: (QueryScreenEvent) -> Unit
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(state.messages.size) {
+        if (state.messages.isNotEmpty()) {
+            listState.animateScrollToItem(state.messages.size - 1)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,88 +73,138 @@ fun QueryScreenContent(
             )
         },
         bottomBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TextField(
-                    value = state.newMessage,
-                    onValueChange = { onEvent(QueryScreenEvent.MessageChanged(it)) },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Type a message...") }
-                )
-                IconButton(onClick = { onEvent(QueryScreenEvent.SendMessage) }) {
-                    Icon(imageVector = Icons.Default.Send, contentDescription = "Send")
+            Column {
+                AnimatedVisibility(visible = state.errorMessage.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+
+                        Text(
+                            text = state.errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+
+                            )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TextField(
+                        value = state.newMessage,
+                        onValueChange = { onEvent(QueryScreenEvent.MessageChanged(it)) },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Type a message...") }
+                    )
+                    IconButton(onClick = { onEvent(QueryScreenEvent.SendMessage) }) {
+                        Icon(imageVector = Icons.Default.Send, contentDescription = "Send")
+                    }
                 }
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            Card(
+        if (state.isLoading) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(.4f),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                LazyColumn(Modifier.padding(12.dp)) {
-                    item { TaskItem(task = state.task) }
-                }
-
+                CircularProgressIndicator()
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-            ) {
-                Text("Talking to ${state.talkingTo}", color = MaterialTheme.colorScheme.onPrimaryContainer , fontWeight = FontWeight.Bold)
-            }
-
-            LazyColumn(
+        } else {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(state.messages.sortedBy { it.timestamp }) { message ->
-                    val isUserMessage = if (state.userIsEmployee) {
-                        message.sendByEmployee
-                    } else {
-                        !message.sendByEmployee
-                    }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(.4f),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                ) {
+                    LazyColumn(Modifier.padding(12.dp)) {
+                        item { TaskItem(task = state.task, showActionButton = false) }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Talking to ${state.talkingTo}",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                if (state.isMessageLoading) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Card(
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .fillMaxWidth(0.75f)
-                        ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                Text(text = message.content)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        state = listState
+                    ) {
+                        items(state.messages.sortedBy { it.timestamp }) { message ->
+                            val isUserMessage = if (state.userIsEmployee) {
+                                message.sendByEmployee
+                            } else {
+                                !message.sendByEmployee
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
+                            ) {
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                                    modifier = Modifier
+                                        .padding(horizontal = 4.dp)
+                                        .fillMaxWidth(0.75f)
                                 ) {
-                                    Text(
-                                        text = HelperFunction.formatMillisToHoursAndMinutes(message.timestamp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text(text = message.content)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
+                                        ) {
+                                            Text(
+                                                text = HelperFunction.formatMillisToDateTime(
+                                                    message.timestamp
+                                                ),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.outline
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -160,7 +224,9 @@ fun QueryScreenPreview() {
             state = QueryScreenState(
                 talkingTo = "Supervisor",
                 messages = sampleMessages,
-                userIsEmployee = true // or false to preview as supervisor
+                userIsEmployee = false // or false to preview as supervisor,
+//                , isMessageLoading = true,
+//                isLoading = true
             ),
             onEvent = {}
         )

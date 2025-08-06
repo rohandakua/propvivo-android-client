@@ -1,7 +1,9 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,17 +37,67 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.TaskItem
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.theme.AppTheme
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.launch
+import androidx.navigation.NavHostController
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.enum.NavigationEvent
+import com.propvivotaskmanagmentapp.propvivoandroid.presentation.components.AddTaskDialog
 
 
 @Composable
 fun EmployeeTaskScreen(
-    viewModel: EmployeeTaskViewModel = hiltViewModel()
+    viewModel: EmployeeTaskViewModel = hiltViewModel(),
+    navController : NavHostController
 ) {
     val state = viewModel.state
+    if (state.showBreakDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissBreakDialog() },
+            title = {
+                Text(text = "Break Time")
+            },
+            text = {
+                Text(text = "You're currently on a 30-minute break.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { /* no-op or optional: keep dialog */ }
+                ) {
+                    Text("Continue Break")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.dismissBreakDialog() }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if(state.showAddTaskDialog){
+        AddTaskDialog(
+            employees = null,
+            onDismissRequest = {
+                viewModel.onEvent(EmployeeTaskScreenEvent.DismissAddTaskDialog)
+            },
+            onSaveClick = { title, description, estimatedHours, selectedEmployeeId->
+                viewModel.onEvent(EmployeeTaskScreenEvent.SaveNewTaskClicked(title , description , estimatedHours, null))
+            }
+        )
+    }
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent
+            .collect { event ->
+                when (event) {
+                    is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+                    is NavigationEvent.NavigateBack -> navController.popBackStack()
+                }
+            }
+    }
     EmployeeTaskScreenContent(
         state = state,
         onEvent = viewModel::onEvent
@@ -128,20 +181,31 @@ fun EmployeeTaskScreenContent(
 
             Spacer(Modifier.size(16.dp))
             Card(
-                modifier = Modifier.fillMaxHeight(0.8f),
+                modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 LazyColumn(
-                    modifier = Modifier.padding(10.dp),
-                    state = listState
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(state.tasks.size) { index ->
-                        val task = state.tasks[index]
-                        TaskItem(task = task)
-                        Spacer(Modifier.size(10.dp))
+                    items(state.tasks) { task ->
+                        TaskItem(
+                            task = task,
+                            messageArrived = false, // or your actual logic
+                            onQueryClick = {
+                                onEvent(EmployeeTaskScreenEvent.RaiseQuery(task.id))
+                            },
+                            onPauseResumeClick = {
+                                onEvent(EmployeeTaskScreenEvent.SelectTask(task.id))
+                                onEvent(EmployeeTaskScreenEvent.TogglePauseResume(task.id))
+                            },
+                            isTimerWorking = state.isTimerWorking && state.selectedTask?.id == task.id
+                        )
                     }
                 }
+
             }
 
             Spacer(Modifier.height(12.dp))
@@ -156,6 +220,19 @@ fun EmployeeTaskScreenContent(
                     Text("Add new task")
                 }
             }
+            state.errorMessage?.let {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         }
     }
 }
@@ -168,7 +245,7 @@ fun EmployeeTaskScreenPreview() {
             state = EmployeeTaskScreenState(
                 tasks = EmployeeTaskViewModel.sampleTasks,
                 selectedTask = EmployeeTaskViewModel.sampleTasks[0],
-                timerText = "01:23:45"
+                timerText = "01:23:45",
             ),
             onEvent = {}
         )
