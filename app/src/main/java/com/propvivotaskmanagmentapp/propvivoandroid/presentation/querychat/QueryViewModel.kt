@@ -40,7 +40,7 @@ class QueryViewModel @Inject constructor(
         }
     }
     fun updateCanTalk(){
-        if(state.task.assignedTo == state.task.assignedBy){
+        if( state.task.assignedBy.isNotBlank() && state.task.assignedTo == state.task.assignedBy ){
             state = state.copy(errorMessage = "Can't talk to the Employee (Self Task)", canTalk = false)
         }else{
             state = state.copy(canTalk = true , errorMessage = "")

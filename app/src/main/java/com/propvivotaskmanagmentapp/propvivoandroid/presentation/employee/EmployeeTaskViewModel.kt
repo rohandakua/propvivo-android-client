@@ -124,7 +124,7 @@ class EmployeeTaskViewModel @Inject constructor(
 
     private fun startBreakTimer() {
         timerJob = viewModelScope.launch {
-            var breakTime = 30 * 60 // 30 minutes in seconds
+            var breakTime = 30 * 60
             while (breakTime > 0) {
                 delay(1000)
                 breakTime--

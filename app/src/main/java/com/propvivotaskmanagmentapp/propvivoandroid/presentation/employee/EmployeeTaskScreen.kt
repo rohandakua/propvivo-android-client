@@ -54,19 +54,21 @@ fun EmployeeTaskScreen(
     val state = viewModel.state
     if (state.showBreakDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.dismissBreakDialog() },
+            onDismissRequest = {
+
+            },
             title = {
                 Text(text = "Break Time")
             },
             text = {
-                Text(text = "You're currently on a 30-minute break.")
+                Column{
+                    Text(text = "You're currently on a 30-minute break.")
+                    Spacer(Modifier.size(8.dp))
+                    Text(text = state.timerText)
+                }
+
             },
             confirmButton = {
-                TextButton(
-                    onClick = { /* no-op or optional: keep dialog */ }
-                ) {
-                    Text("Continue Break")
-                }
             },
             dismissButton = {
                 TextButton(
