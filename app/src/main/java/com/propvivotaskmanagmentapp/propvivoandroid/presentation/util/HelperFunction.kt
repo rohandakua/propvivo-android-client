@@ -1,9 +1,11 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.util
 
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 object HelperFunction {
     fun formatMillisToHoursAndMinutes(milliseconds: Long): String {
@@ -36,6 +38,11 @@ object HelperFunction {
         return this.toInstant()
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
+    }
+    fun formatMillisToDateTime(timestamp: Long): String {
+        val date = Date(timestamp)
+        val format = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+        return format.format(date)
     }
 
 

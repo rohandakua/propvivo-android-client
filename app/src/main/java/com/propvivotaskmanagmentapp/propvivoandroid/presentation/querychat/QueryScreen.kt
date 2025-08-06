@@ -197,7 +197,7 @@ fun QueryScreenContent(
                                             horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
                                         ) {
                                             Text(
-                                                text = HelperFunction.formatMillisToHoursAndMinutes(
+                                                text = HelperFunction.formatMillisToDateTime(
                                                     message.timestamp
                                                 ),
                                                 style = MaterialTheme.typography.labelSmall,
