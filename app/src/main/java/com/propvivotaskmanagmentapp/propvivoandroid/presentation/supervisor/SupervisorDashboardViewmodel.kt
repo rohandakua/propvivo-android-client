@@ -169,7 +169,11 @@ class SupervisorDashboardViewModel @Inject constructor(
                 _state.value = _state.value.copy(showFilterDialog = false)
             }
             is SupervisorDashboardEvent.ResolveQuery -> {
-                onQueryClicked(event.taskId)
+                if(event.task.assignedBy == event.task.assignedTo){
+                    _state.value = _state.value.copy(errorMessage = "Cannot raise query on self assigned task")
+                    return
+                }
+                onQueryClicked(event.task.id)
             }
 
             SupervisorDashboardEvent.Logout -> {

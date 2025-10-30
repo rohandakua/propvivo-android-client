@@ -1,5 +1,6 @@
 package com.propvivotaskmanagmentapp.propvivoandroid.presentation.supervisor
 
+import com.propvivotaskmanagmentapp.propvivoandroid.domain.model.Task
 import com.propvivotaskmanagmentapp.propvivoandroid.presentation.employee.EmployeeTaskScreenEvent
 
 sealed class SupervisorDashboardEvent {
@@ -10,7 +11,7 @@ sealed class SupervisorDashboardEvent {
         val estimatedTime: String,
         val selectedEmployeeId: String
     ) : SupervisorDashboardEvent()
-    data class ResolveQuery(val taskId: String) : SupervisorDashboardEvent()
+    data class ResolveQuery(val task : Task) : SupervisorDashboardEvent()
     object AddTaskClicked : SupervisorDashboardEvent()
     object Logout : SupervisorDashboardEvent()
     object FilterClicked : SupervisorDashboardEvent()
