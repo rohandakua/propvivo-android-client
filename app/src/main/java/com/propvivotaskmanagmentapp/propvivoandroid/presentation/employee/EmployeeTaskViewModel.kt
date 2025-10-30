@@ -44,7 +44,7 @@ class EmployeeTaskViewModel @Inject constructor(
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
-    fun onQueryClicked(taskId: String) {
+    fun onQueryClicked(task : Task) {
         viewModelScope.launch {
             if (state.selectedTask != null && state.selectedTask?.assignedBy == state.selectedTask?.assignedTo) {
                 state = state.copy(errorMessage = "You cannot raise a query for your own task")
@@ -53,7 +53,7 @@ class EmployeeTaskViewModel @Inject constructor(
                 state = state.copy(errorMessage = "Select a task first")
                 return@launch
             } else
-                _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(true,taskId).destination))
+                _navigationEvent.emit(NavigationEvent.NavigateTo(AppDestination.TaskQueryScreen(true,task.id).destination))
 
         }
     }
@@ -202,7 +202,11 @@ class EmployeeTaskViewModel @Inject constructor(
             }
 
             is EmployeeTaskScreenEvent.RaiseQuery -> {
-                onQueryClicked(event.taskId)
+                if(event.task.assignedBy == event.task.assignedTo){
+                    state = state.copy(errorMessage = "You cannot raise a query for your own task")
+                    return
+                }
+                onQueryClicked(event.task)
             }
 
             is EmployeeTaskScreenEvent.SaveNewTaskClicked -> {

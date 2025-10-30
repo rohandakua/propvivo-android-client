@@ -179,7 +179,7 @@ fun SupervisorDashboardScreenContent(
                                                 isSupervisor = true,
                                                 onQueryClick = {
                                                     Log.e("Query clicked","query clicked")
-                                                    onEvent(SupervisorDashboardEvent.ResolveQuery(task.id))}
+                                                    onEvent(SupervisorDashboardEvent.ResolveQuery(task))}
                                             )
                                         }
                                     }

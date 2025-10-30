@@ -195,7 +195,9 @@ fun EmployeeTaskScreenContent(
                             task = task,
                             messageArrived = false, // or your actual logic
                             onQueryClick = {
-                                onEvent(EmployeeTaskScreenEvent.RaiseQuery(task.id))
+//                                if(task.assignedBy != task.assignedTo){
+                                onEvent(EmployeeTaskScreenEvent.RaiseQuery(task))
+//                                }
                             },
                             onPauseResumeClick = {
                                 onEvent(EmployeeTaskScreenEvent.SelectTask(task.id))
