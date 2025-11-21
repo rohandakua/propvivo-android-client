@@ -86,7 +86,9 @@ fun TaskItem(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         BadgedBox(
-                            modifier = Modifier.clickable { onQueryClick() },
+                            modifier = Modifier.clickable {
+                                onQueryClick()
+                                                          },
                             badge = {
                                 if (messageArrived) {
                                     Badge()

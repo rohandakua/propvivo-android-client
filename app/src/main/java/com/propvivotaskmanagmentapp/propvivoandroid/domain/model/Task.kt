@@ -12,5 +12,5 @@ data class Task (
     val updatedAt: Long?
 
 ){
-    constructor(): this("","","",0,0,"","",0,0)
+    constructor(): this("","","",0,0,"Employee","",0,0)
 }

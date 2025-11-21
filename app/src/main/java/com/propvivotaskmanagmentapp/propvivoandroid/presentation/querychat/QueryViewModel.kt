@@ -30,11 +30,13 @@ class QueryViewModel @Inject constructor(
         )
     )
     init {
-        getTask()
+
         viewModelScope.launch(Dispatchers.IO) {
+            getTask()
+            updateCanTalk()
             while (true) {
                 getMessages()
-                updateCanTalk()
+                //updateCanTalk()
                 delay(10000)
             }
         }
